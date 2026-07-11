@@ -447,5 +447,689 @@
 <script src="https://clenchinfer.com/5b/40/6b/5b406bc4274215a74785f47e6cfeacc6.js"></script>
 
     
+<script>
+(function(){
+
+/* =========================
+   STYLE
+========================= */
+var css = `
+#ageOverlay{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:linear-gradient(135deg,#0d0d0d,#1a1a1a,#111);
+  z-index:999999999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  font-family:Arial,sans-serif;
+}
+
+.age-box{
+  width:92%;
+  max-width:470px;
+  background:rgba(25,25,25,0.96);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:24px;
+  padding:40px 28px;
+  text-align:center;
+  color:#fff;
+  box-shadow:
+    0 0 40px rgba(0,0,0,0.7),
+    0 0 15px rgba(255,60,120,0.2);
+  animation:popup .4s ease;
+  backdrop-filter:blur(8px);
+}
+
+@keyframes popup{
+  from{
+    transform:scale(.85);
+    opacity:0;
+  }
+  to{
+    transform:scale(1);
+    opacity:1;
+  }
+}
+
+.age-icon{
+  width:95px;
+  height:95px;
+  margin:auto;
+  margin-bottom:20px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ff3c78,#ff0844);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:38px;
+  font-weight:bold;
+  color:#fff;
+  box-shadow:0 0 25px rgba(255,60,120,0.5);
+}
+
+.age-box h2{
+  font-size:32px;
+  margin:0 0 15px;
+  color:#fff;
+}
+
+.age-box p{
+  font-size:15px;
+  line-height:1.8;
+  color:#d7d7d7;
+  margin-bottom:28px;
+}
+
+.age-buttons{
+  display:flex;
+  gap:14px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+.age-btn{
+  padding:14px 28px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.3s;
+  min-width:170px;
+}
+
+.btn-yes{
+  background:linear-gradient(135deg,#00c896,#00a884);
+  color:#fff;
+  box-shadow:0 0 15px rgba(0,200,150,.3);
+}
+
+.btn-yes:hover{
+  transform:translateY(-2px);
+}
+
+.btn-no{
+  background:linear-gradient(135deg,#ff3c78,#ff0844);
+  color:#fff;
+  box-shadow:0 0 15px rgba(255,60,120,.3);
+}
+
+.btn-no:hover{
+  transform:translateY(-2px);
+}
+
+.blocked-wrap{
+  text-align:center;
+  color:#fff;
+}
+
+.blocked-icon{
+  width:110px;
+  height:110px;
+  margin:auto;
+  border-radius:50%;
+  background:linear-gradient(135deg,#ff0844,#ff3c78);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:48px;
+  font-weight:bold;
+  box-shadow:0 0 30px rgba(255,0,85,.45);
+  margin-bottom:25px;
+}
+
+.blocked-wrap h1{
+  font-size:36px;
+  margin-bottom:15px;
+  color:#fff;
+}
+
+.blocked-wrap p{
+  color:#dcdcdc;
+  line-height:1.9;
+  font-size:16px;
+  margin-bottom:10px;
+}
+`;
+
+var style = document.createElement("style");
+style.innerHTML = css;
+document.head.appendChild(style);
+
+/* =========================
+   DISABLE RIGHT CLICK
+========================= */
+document.addEventListener("contextmenu", function(e){
+  e.preventDefault();
+});
+
+/* =========================
+   DISABLE DEVTOOLS KEYS
+========================= */
+document.addEventListener("keydown", function(e){
+
+  if(e.keyCode == 123){
+    e.preventDefault();
+    return false;
+  }
+
+  if(e.ctrlKey && e.shiftKey && e.keyCode == 73){
+    e.preventDefault();
+    return false;
+  }
+
+  if(e.ctrlKey && e.shiftKey && e.keyCode == 74){
+    e.preventDefault();
+    return false;
+  }
+
+  if(e.ctrlKey && e.keyCode == 85){
+    e.preventDefault();
+    return false;
+  }
+
+  if(e.ctrlKey && e.shiftKey && e.keyCode == 67){
+    e.preventDefault();
+    return false;
+  }
+
+  if(e.ctrlKey && e.keyCode == 83){
+    e.preventDefault();
+    return false;
+  }
+
+});
+
+/* =========================
+   DEVTOOLS DETECT
+========================= */
+(function(){
+
+  function detectDevTools(){
+
+    var widthThreshold = window.outerWidth - window.innerWidth > 160;
+    var heightThreshold = window.outerHeight - window.innerHeight > 160;
+
+    if(widthThreshold || heightThreshold){
+
+      document.body.innerHTML = `
+        <div id="ageOverlay">
+
+          <div class="age-box blocked-wrap">
+
+            <div class="blocked-icon">
+              !
+            </div>
+
+            <h1>Access Blocked</h1>
+
+            <p>
+              Developer tools are not allowed on this website.
+            </p>
+
+          </div>
+
+        </div>
+      `;
+    }
+
+  }
+
+  setInterval(detectDevTools,1000);
+
+})();
+
+/* =========================
+   CHECK STATUS
+========================= */
+var now = new Date().getTime();
+
+var blockedUntil = localStorage.getItem("blockedUntil");
+
+var verifiedDate = localStorage.getItem("verifiedDate");
+
+var today = new Date().toDateString();
+
+/* =========================
+   UNDER 18 BLOCK
+========================= */
+if(blockedUntil && now < parseInt(blockedUntil)){
+
+    showBlockedMessage();
+
+}else{
+
+    if(verifiedDate !== today){
+
+        showAgePopup();
+
+    }
+
+}
+
+/* =========================
+   AGE POPUP
+========================= */
+function showAgePopup(){
+
+    var popup = document.createElement("div");
+
+    popup.id = "ageOverlay";
+
+    popup.innerHTML = `
+      <div class="age-box">
+
+        <div class="age-icon">
+          18+
+        </div>
+
+        <h2>Age Verification</h2>
+
+        <p>
+          This website contains adult content and is intended only for users aged 18 or older.
+          <br><br>
+          Please confirm your age before entering.
+        </p>
+
+        <div class="age-buttons">
+
+          <button class="age-btn btn-yes" id="allowBtn">
+            I Am 18+
+          </button>
+
+          <button class="age-btn btn-no" id="denyBtn">
+            I Am Under 18
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+    document.body.appendChild(popup);
+
+    document.getElementById("allowBtn").onclick = allowAccess;
+
+    document.getElementById("denyBtn").onclick = denyAccess;
+}
+
+/* =========================
+   ALLOW ACCESS
+========================= */
+function allowAccess(){
+
+    var today = new Date().toDateString();
+
+    localStorage.setItem("verifiedDate", today);
+
+    var overlay = document.getElementById("ageOverlay");
+
+    if(overlay){
+      overlay.remove();
+    }
+}
+
+/* =========================
+   DENY ACCESS
+========================= */
+function denyAccess(){
+
+    var oneHour = 60 * 60 * 1000;
+
+    var blockedTime = new Date().getTime() + oneHour;
+
+    localStorage.setItem("blockedUntil", blockedTime);
+
+    showBlockedMessage();
+}
+
+/* =========================
+   BLOCK PAGE
+========================= */
+function showBlockedMessage(){
+
+    document.body.innerHTML = `
+      <div id="ageOverlay">
+
+        <div class="age-box blocked-wrap">
+
+          <div class="blocked-icon">
+            !
+          </div>
+
+          <h1>Access Restricted</h1>
+
+          <p>
+            You are under 18 years old.
+            <br><br>
+            This website is not intended for minors.
+            <br>
+            Please leave this website immediately.
+          </p>
+
+        </div>
+
+      </div>
+    `;
+}
+
+})();
+</script>
+
+
+
+
+
+<script>
+(function () {
+
+    function detectAdBlock() {
+        return new Promise((resolve) => {
+
+            let bait = document.createElement("div");
+
+            bait.className = "adsbox ad-banner ad-unit";
+            bait.style.width = "1px";
+            bait.style.height = "1px";
+            bait.style.position = "absolute";
+            bait.style.left = "-9999px";
+            bait.style.visibility = "hidden";
+
+            document.body.appendChild(bait);
+
+            setTimeout(() => {
+
+                let isBlocked =
+                    !bait ||
+                    bait.offsetParent === null ||
+                    window.getComputedStyle(bait).display === "none";
+
+                document.body.removeChild(bait);
+
+                resolve(isBlocked);
+
+            }, 100);
+
+        });
+    }
+
+    function showAdblockPopup() {
+
+        let overlay = document.createElement("div");
+
+        overlay.id = "adblock-overlay";
+
+        overlay.innerHTML = `
+            <style>
+                #adblock-overlay{
+                    position:fixed;
+                    inset:0;
+                    width:100%;
+                    height:100%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    z-index:999999;
+                    backdrop-filter: blur(18px);
+                    -webkit-backdrop-filter: blur(18px);
+                    background: rgba(0,0,0,0.75);
+                    animation: fadeIn .35s ease;
+                    padding:20px;
+                    box-sizing:border-box;
+                }
+
+                #adblock-popup{
+                    width:100%;
+                    max-width:520px;
+                    background: linear-gradient(145deg,#ffffff,#f3f3f3);
+                    border-radius:24px;
+                    padding:35px 30px;
+                    text-align:center;
+                    font-family:system-ui;
+                    box-shadow:
+                        0 15px 40px rgba(0,0,0,.45),
+                        0 0 0 1px rgba(255,255,255,.2);
+                    animation: popupScale .35s ease;
+                    position:relative;
+                    overflow:hidden;
+                }
+
+                #adblock-popup:before{
+                    content:"";
+                    position:absolute;
+                    top:-80px;
+                    right:-80px;
+                    width:180px;
+                    height:180px;
+                    background:rgba(26,115,232,.08);
+                    border-radius:50%;
+                }
+
+                #adblock-popup:after{
+                    content:"";
+                    position:absolute;
+                    bottom:-90px;
+                    left:-90px;
+                    width:200px;
+                    height:200px;
+                    background:rgba(255,87,34,.08);
+                    border-radius:50%;
+                }
+
+                #adblock-icon{
+                    width:90px;
+                    height:90px;
+                    margin:auto;
+                    margin-bottom:18px;
+                    border-radius:50%;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    background:linear-gradient(135deg,#ff4d4d,#ff1f1f);
+                    color:#fff;
+                    font-size:42px;
+                    box-shadow:0 10px 25px rgba(255,0,0,.35);
+                }
+
+                #adblock-title{
+                    margin:0 0 12px;
+                    font-size:30px;
+                    font-weight:800;
+                    color:#111;
+                }
+
+                #adblock-text{
+                    margin:0;
+                    font-size:17px;
+                    line-height:1.7;
+                    color:#555;
+                }
+
+                #refresh-page{
+                    margin-top:28px;
+                    border:none;
+                    outline:none;
+                    background:linear-gradient(135deg,#1a73e8,#0057d8);
+                    color:#fff;
+                    padding:14px 30px;
+                    border-radius:14px;
+                    font-size:17px;
+                    font-weight:700;
+                    cursor:pointer;
+                    transition:.25s ease;
+                    box-shadow:0 8px 20px rgba(26,115,232,.35);
+                }
+#refresh-page{
+    margin:28px auto 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+                #refresh-page:hover{
+                    transform:translateY(-2px) scale(1.03);
+                    box-shadow:0 12px 28px rgba(26,115,232,.45);
+                }
+
+                #refresh-page:active{
+                    transform:scale(.98);
+                }
+
+                @keyframes fadeIn{
+                    from{
+                        opacity:0;
+                    }
+                    to{
+                        opacity:1;
+                    }
+                }
+
+                @keyframes popupScale{
+                    from{
+                        transform:scale(.85);
+                        opacity:0;
+                    }
+                    to{
+                        transform:scale(1);
+                        opacity:1;
+                    }
+                }
+
+                @media(max-width:600px){
+
+                    #adblock-popup{
+                        padding:30px 22px;
+                        border-radius:20px;
+                    }
+
+                    #adblock-title{
+                        font-size:24px;
+                    }
+
+                    #adblock-text{
+                        font-size:15px;
+                    }
+
+                    #refresh-page{
+    margin:28px auto 0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+                }
+            </style>
+
+            <div id="adblock-popup">
+
+                <div id="adblock-icon">
+                    ⚠
+                </div>
+
+                <h2 id="adblock-title">
+                    AdBlocker Detected
+                </h2>
+
+                <p id="adblock-text">
+                    We rely on ads to keep this website running for free.
+                    Please disable your AdBlocker or whitelist our site
+                    to continue enjoying the content.
+                </p>
+
+                <button id="refresh-page">
+                    I Disabled AdBlock
+                </button>
+
+            </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        document
+            .getElementById("refresh-page")
+            .addEventListener("click", function () {
+                location.reload();
+            });
+    }
+
+    window.addEventListener("load", () => {
+
+        detectAdBlock().then((adBlockDetected) => {
+
+            if (adBlockDetected) {
+                showAdblockPopup();
+            }
+
+        });
+
+    });
+
+})();
+</script>
+
+<script>
+// Disable right-click
+document.addEventListener("contextmenu", function (event) {
+    event.preventDefault();
+});
+</script>
+<script>
+// Disable right click
+document.addEventListener("contextmenu", e => e.preventDefault());
+
+// Disable copy, cut, drag
+["copy","cut","dragstart","selectstart"].forEach(event=>{
+    document.addEventListener(event,e=>e.preventDefault());
+});
+
+// Disable common shortcut keys
+document.addEventListener("keydown", function(e){
+    if (
+        e.key === "F12" ||
+        (e.ctrlKey && ["u","U","s","S","c","C","a","A","i","I","j","J"].includes(e.key))
+    ){
+        e.preventDefault();
+    }
+});
+
+// Disable long press on images
+document.querySelectorAll("img").forEach(img=>{
+    img.setAttribute("draggable","false");
+
+    img.addEventListener("touchstart", function(e){
+        e.preventDefault();
+    }, {passive:false});
+
+    img.addEventListener("contextmenu", function(e){
+        e.preventDefault();
+    });
+});
+</script>
+<style>
+/* Disable text selection */    /* Disable text selection */
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Prevent image dragging */
+img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: none;
+}
+
+/* Prevent image highlighting */
+img {
+    -webkit-touch-callout: none;
+}
+</style>
 </body>
 </html>
